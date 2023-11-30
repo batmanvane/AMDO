@@ -1,0 +1,5 @@
+source_1        -->         sink_1, environment, HP_conversion          -->     sink_2
+
+source_2        -->         storage_1           -->     sink_1, HP_conversion, environment       -->     sink_2
+
+source_3        -->         HP_Conversion       -->     sink_2, environment
