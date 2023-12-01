@@ -5,6 +5,7 @@
 import FINE as fn
 import pandas as pd
 from tabulate import tabulate
+from getPVPowerprofile import get_pv_power_profile
 
 ## Define Components of EnergySystemModel
 
@@ -81,6 +82,7 @@ esM.add(fn.Source(esM=esM,
 # source_2 as PV
 # load PV data
 dataPV = pd.read_excel("DataForExample/PV_1.xlsx")
+#dataPV = get_pv_power_profile(latitude=52.5, longitude=13.5, start=2014, end=2014, surface_tilt=20, surface_azimuth=180)
 investPerCapacityPV = 800
 maxCapacityPV= 1000 # kW
 fixCapacityPV = None # kW
@@ -196,7 +198,9 @@ TACSTORAGE = storSummary['location01'].loc[('STORAGE', 'TAC', '[1e Euro/a]')]
 TACGRID = srcSnkSummary['location01'].loc[('GRID', 'TAC', '[1e Euro/a]')]
 TACENV = srcSnkSummary['location01'].loc[('environment', 'TAC', '[1e Euro/a]')]
 TAC = TACPV + TACSTORAGE + TACGRID + TACENV
-
+LCOEPV = TACPV / (operationTotOptimumPV)
+LCOESTORAGE = TACSTORAGE / (operationTotOptimumStorageDischarge)
+LCOEGRID = TACGRID / (operationTotOptimumGrid)
 #print((TAC,operationTotCO2))
 
 # Create a dictionary with variable names and their corresponding values
@@ -208,17 +212,26 @@ dataprint = {
     'operationTotOptimumStorageCharge': [operationTotOptimumStorageCharge],
     'operationTotOptimumStorageDischarge': [operationTotOptimumStorageDischarge],
     'operationTotCO2': [operationTotCO2],
-    'TAC': [TAC]
+    'TAC': [TAC],
+    'LCOEPV': [LCOEPV],
+    'LCOESTORAGE': [LCOESTORAGE],
+    'LCOEGRID': [LCOEGRID],
+    'selfconsumption': [selfconsumption],
+    'selfsufficiency': [selfsufficiency]
 }
 
 # Create a pandas DataFrame from the dictionary
 df = pd.DataFrame(dataprint)
-
+# Transpose the DataFrame
+df_transposed = df.T
 # Format the DataFrame as a table
-table = tabulate(df, headers='keys', tablefmt='psql', showindex=False)
+table = tabulate(df_transposed, headers='keys', tablefmt='psql', showindex=True)
 
 # Display the table
 print(table)
 
 ## Export results
 [esM.getOptimizationSummary("SourceSinkModel", outputLevel=1).to_excel("Results/SourceSinkModel.xlsx"),]
+latitude=52.5
+longitude=13.5
+#test=get_pvgis_tmy(latitude, longitude,startyear=2016, endyear=2016)
