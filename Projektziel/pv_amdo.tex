@@ -1,0 +1,60 @@
+\documentclass[12pt]{amsart}
+\usepackage[latin1]{inputenc}
+\usepackage{amssymb}
+\date{\today}
+
+\begin{document}
+\section{Optimierungsproblem für die Auslegung einer PV Freiflächenanlage}
+
+{\bf Gegeben}
+\begin{itemize}
+\item Lastgang des Energieverbrauchs \( P_{\text{Last}}(t) \) über einen bestimmten Zeitraum.
+\item Kosten für die Errichtung der PV-Anlage, Investitionskosten \( C_{\text{Invest}} \).
+\item Betriebs- und Wartungskosten der PV-Anlage über einen bestimmten Zeitraum \( C_{\text{O\&M}} \).
+\end{itemize}
+
+{\bf Entwurfsvariablen}
+
+\begin{itemize}
+\item Ausrichtung der PV-Module \( \theta \) (in Grad, z.B., bezogen auf geografische Nordrichtung).
+\item Neigung der PV-Module \( \phi \) (in Grad, z.B., Winkel zur horizontalen Ebene).
+\item Flächennutzengrad \( \eta_{\text{Fläche}} \) (Verhältnis der tatsächlich genutzten Fläche zur Gesamtfläche).
+\end{itemize}
+
+{\bf Zielkriterien}
+
+\begin{enumerate}
+\item Maximierung der Autarkiegrad \( AG \):
+   \[ \max AG = \frac{\int_{t_1}^{t_2} P_{\text{PV}}(t) \, dt}{\int_{t_1}^{t_2} P_{\text{Last}}(t) \, dt} \]
+   Dabei ist \( P_{\text{PV}}(t) \) die von der PV-Anlage erzeugte Leistung zum Zeitpunkt \( t \) und \( P_{\text{Last}}(t) \) entsprechend angeforderte Last.
+
+\item Maximierung des Energieertrags \( E \):
+   \[ \max E = \int_{t_1}^{t_2} P_{\text{PV}}(t) \, dt \]
+
+\item Maximierung der Wirtschaftlichkeit \( W \) (oder halt Eigenverbrauch \( EV \))):
+   \[ \max W \text{bzw.} EV\]
+\end{enumerate}
+
+Unter den Nebenbedingungen:
+
+\begin{enumerate}
+\item Leistungsbilanz:
+   \[ P_{\text{PV}}(t) = \eta_{\text{Fläche}} \cdot P_{\text{Sonnenstrahlung}}(t, \theta, \phi) \]
+   wobei \( P_{\text{Sonnenstrahlung}} \) die auf die PV-Module treffende Sonnenstrahlung ist.
+
+\item  Lastgang:
+ \( P_{\text{Last}}(t) \)  gegebener Lastgang.
+
+\item  Ausrichtungsbeschränkung:
+   \[ 0 \leq \theta \leq 360^\circ \]
+
+\item  Neigungsbeschränkung:
+   \[ 0 \leq \phi \leq 90^\circ \]
+
+\item Flächennutzengradbeschränkung:
+   \[ 0 \leq \eta_{\text{Fläche}} \leq 1 \]
+
+\item Modell Abschattungs(winkel) : \[  \eta_{\text{Fläche}} \]
+
+\end{enumerate}
+Die Integration über die Zeit repräsentiert den Zeitraum \( [t_1, t_2] \), in dem die Auslegung gelten soll.\end{document}
