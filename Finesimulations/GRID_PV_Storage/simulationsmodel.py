@@ -12,7 +12,7 @@ from getPVPowerprofile import get_pv_power_profile
 def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, maxCapacityPV=100, fixCapacityPV=None,
                          maxCapacityST=100, fixCapacityST=5,
                          start=2014, end=2014, investPerCapacityPV=800, investPerCapacityST=700, relEmissionCosts=50,
-                         scale_sink=1):
+                         scale_sink=1,f=0.3):
     """
     input: tilt, azimuth, long, lat, maxCapacityPV, fixCapacityPV, maxCapacityST, fixCapacityST, investPerCapacityPV,
     investPerCapacityST, relEmissionCosts) returns stats at table
@@ -91,10 +91,10 @@ def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, ma
     # source_2 as PV
     # load PV data
     # dataPV = pd.read_excel("DataForExample/PV_1.xlsx")
-
-    dataPVgis: Series = get_pv_power_profile(latitude, longitude, start, end, surface_tilt=tilt,
-                                             surface_azimuth=azimuth)
+    dataPVgis, horizon = get_pv_power_profile(latitude, longitude, start, end, surface_tilt=tilt,
+                                             surface_azimuth=azimuth,f=f)
     dataPVgis.rename("location01", inplace=True)
+    maxCapacityPV=maxCapacityPV*f
     esM.add(fn.Source(esM=esM,
                       name='PV',
                       commodity=source_2,
@@ -256,9 +256,11 @@ def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, ma
     [esM.getOptimizationSummary("ConversionModel", outputLevel=1).to_excel("Results/ConversionModel.xlsx"), ]
     df_transposed.to_excel("Results/Summary.xlsx")
 
-    return df_transposed, srcSnkSummary, convSummary, storSummary, esM
+    return df_transposed, srcSnkSummary, convSummary, storSummary, esM, horizon
 
 
 if __name__ == "__main__":
-    result, _, _, _, _ = energy_systems_stats(tilt=30, azimuth=10, maxCapacityPV=30, scale_sink=10)
+
+    result, _, _, _, _, horizon = energy_systems_stats(tilt=7, azimuth=180, maxCapacityPV=30, scale_sink=10,f=.9)
     print(tabulate(result, headers='keys', tablefmt='psql', showindex=True))
+    print(horizon)
