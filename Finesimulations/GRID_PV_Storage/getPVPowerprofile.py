@@ -88,7 +88,7 @@ def plot_solar_elevation(data):
     plt.grid(True)
     plt.show()
 
-def calculate_module_row_spacing(data, time1='09:00:00', time2='15:00:00', surface_tilt=30, module_width_D=2):
+def calculate_module_row_spacing(data, time1='09:00:00', time2='15:00:00', surface_tilt=30, module_width=2):
     """
     Calculate solar elevation angles at specified times and module row spacing.
 
@@ -123,19 +123,19 @@ def calculate_module_row_spacing(data, time1='09:00:00', time2='15:00:00', surfa
     elevation_angle_time2 = elevation_values[index_time2]
 
     # Calculate Height_Difference
-    height_difference = np.sin(np.radians(surface_tilt)) * module_width_D
+    height_difference = np.sin(np.radians(surface_tilt)) * module_width
 
     # Calculate Module_Row_Spacing_L using the maximum of the two elevation angles
     min_elevation_angle = max(elevation_angle_time1, elevation_angle_time2)
-    module_row_spacing_L = height_difference / np.tan(np.radians(min_elevation_angle))
+    module_row_spacing = height_difference / np.tan(np.radians(min_elevation_angle))
 
     # Calculate Area_Usage
-    area_usage = module_width_D / module_row_spacing_L
+    area_usage = module_width / (module_row_spacing+np.cos(np.radians(surface_tilt)) * module_width)
 
     result = {
         'elevationAngleTimeEarly': elevation_angle_time1,
         'elevationAngleTimeLate': elevation_angle_time2,
-        'moduleRowSpacingL': module_row_spacing_L,
+        'moduleRowSpacingL': module_row_spacing,
         'areaUsage': area_usage
     }
 

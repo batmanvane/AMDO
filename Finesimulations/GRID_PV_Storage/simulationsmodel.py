@@ -49,7 +49,7 @@ def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, ma
 def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, maxCapacityPV=100, fixCapacityPV=None,
                          maxCapacityST=100, fixCapacityST=5,
                          start=2014, end=2014, investPerCapacityPV=800, investPerCapacityST=700, relEmissionCosts=50,
-                         scale_sink=1,module_width_D=2):
+                         scale_sink=1,module_width=2):
     """
     input: tilt, azimuth, long, lat, maxCapacityPV, fixCapacityPV, maxCapacityST, fixCapacityST, investPerCapacityPV,
     investPerCapacityST, relEmissionCosts) returns stats at table
@@ -131,7 +131,7 @@ def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, ma
     dataPVgis, data = get_pv_power_profile(latitude, longitude, start, end, surface_tilt=tilt,
                                              surface_azimuth=azimuth)
     dataPVgis.rename("location01", inplace=True)
-    alignmentPV = calculate_module_row_spacing(data,module_width_D=module_width_D)
+    alignmentPV = calculate_module_row_spacing(data,module_width=module_width)
     f=alignmentPV["areaUsage"]
     maxCapacityPV=maxCapacityPV*f
     esM.add(fn.Source(esM=esM,
@@ -311,6 +311,6 @@ def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, ma
 
 if __name__ == "__main__":
 
-    result= energy_systems_stats(tilt=7, azimuth=80, maxCapacityPV=30, scale_sink=10, module_width_D=10)
+    result= energy_systems_stats(tilt=30, azimuth=110, maxCapacityPV=30, scale_sink=10, module_width=20)
     print(tabulate(result["tableview"], headers='keys', tablefmt='psql', showindex=True))
     print(result["alignmentPV"])
