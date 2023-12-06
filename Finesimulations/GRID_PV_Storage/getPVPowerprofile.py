@@ -17,6 +17,7 @@ def get_pv_power_profile(latitude: object = 52, longitude: object = 13.5, start:
         surface_tilt (float): Tilt angle of the PV panels.
         surface_azimuth (float): Azimuth angle of the PV panels.
         f: area fraction (float, default: 0.3)
+
     Returns:
         pd.Series: PV power profile data.
 

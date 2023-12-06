@@ -14,6 +14,35 @@ def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, ma
                          start=2014, end=2014, investPerCapacityPV=800, investPerCapacityST=700, relEmissionCosts=50,
                          scale_sink=1,f=0.3):
     """
+    Calculates the statistics of an energy system model based on the given parameters.
+
+    Args:
+        tilt (int, optional): Tilt angle of the PV panels in degrees. Defaults to 20.
+        azimuth (int, optional): Azimuth angle of the PV panels in degrees. Defaults to 180.
+        longitude (float, optional): Longitude of the location. Defaults to 13.5.
+        latitude (float, optional): Latitude of the location. Defaults to 52.5.
+        maxCapacityPV (int, optional): Maximum capacity of PV panels in kW. Defaults to 100.
+        fixCapacityPV (int, optional): Fixed capacity of PV panels in kW. Defaults to None.
+        maxCapacityST (int, optional): Maximum capacity of storage in kW. Defaults to 100.
+        fixCapacityST (int, optional): Fixed capacity of storage in kW. Defaults to 5.
+        start (int, optional): Start year of the simulation. Defaults to 2014.
+        end (int, optional): End year of the simulation. Defaults to 2014.
+        investPerCapacityPV (int, optional): Investment cost per capacity of PV panels in Euro. Defaults to 800.
+        investPerCapacityST (int, optional): Investment cost per capacity of storage in Euro. Defaults to 700.
+        relEmissionCosts (int, optional): Relative emission costs in Euro per ton of CO2 equivalent. Defaults to 50.
+        scale_sink (int, optional): Scaling factor for the electricity load demand profile. Defaults to 1.
+        f (float, optional): Scaling factor for the maximum capacity of PV panels. Defaults to 0.3.
+
+    Returns:
+        dict: A dictionary containing the calculated statistics of the energy system model.
+    """
+    # Function code goes here
+    pass
+def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, maxCapacityPV=100, fixCapacityPV=None,
+                         maxCapacityST=100, fixCapacityST=5,
+                         start=2014, end=2014, investPerCapacityPV=800, investPerCapacityST=700, relEmissionCosts=50,
+                         scale_sink=1,f=0.3):
+    """
     input: tilt, azimuth, long, lat, maxCapacityPV, fixCapacityPV, maxCapacityST, fixCapacityST, investPerCapacityPV,
     investPerCapacityST, relEmissionCosts) returns stats at table
     """
