@@ -6,7 +6,7 @@ import FINE as fn
 import pandas as pd
 from pandas import Series
 from tabulate import tabulate
-from getPVPowerprofile import get_pv_power_profile
+from getPVPowerprofile import get_pv_power_profile, calculate_module_row_spacing
 
 
 def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, maxCapacityPV=100, fixCapacityPV=None,
@@ -34,14 +34,22 @@ def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, ma
         f (float, optional): Scaling factor for the maximum capacity of PV panels. Defaults to 0.3.
 
     Returns:
-        dict: A dictionary containing the calculated statistics of the energy system model.
+        Returns:
+        - Dictionary containing the following variables:
+            - 'df_transposed': Transposed DataFrame for tabular view.
+            - 'srcSnkSummary': Summary for source and sink.
+            - 'convSummary': Conversion summary.
+            - 'storSummary': Storage summary.
+            - 'esM': Energy system model.
+            - 'data': Original data.
+            - 'alignmentPV': PV alignment result.
     """
     # Function code goes here
     pass
 def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, maxCapacityPV=100, fixCapacityPV=None,
                          maxCapacityST=100, fixCapacityST=5,
                          start=2014, end=2014, investPerCapacityPV=800, investPerCapacityST=700, relEmissionCosts=50,
-                         scale_sink=1,f=0.3):
+                         scale_sink=1,module_width_D=2):
     """
     input: tilt, azimuth, long, lat, maxCapacityPV, fixCapacityPV, maxCapacityST, fixCapacityST, investPerCapacityPV,
     investPerCapacityST, relEmissionCosts) returns stats at table
@@ -120,9 +128,11 @@ def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, ma
     # source_2 as PV
     # load PV data
     # dataPV = pd.read_excel("DataForExample/PV_1.xlsx")
-    dataPVgis, horizon = get_pv_power_profile(latitude, longitude, start, end, surface_tilt=tilt,
-                                             surface_azimuth=azimuth,f=f)
+    dataPVgis, data = get_pv_power_profile(latitude, longitude, start, end, surface_tilt=tilt,
+                                             surface_azimuth=azimuth)
     dataPVgis.rename("location01", inplace=True)
+    alignmentPV = calculate_module_row_spacing(data,module_width_D=module_width_D)
+    f=alignmentPV["areaUsage"]
     maxCapacityPV=maxCapacityPV*f
     esM.add(fn.Source(esM=esM,
                       name='PV',
@@ -270,11 +280,11 @@ def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, ma
     }
 
     # Create a pandas DataFrame from the dictionary
-    df = pd.DataFrame(dataprint)
+    tableview = pd.DataFrame(dataprint)
     # Transpose the DataFrame
-    df_transposed = df.T
+    tableview_transposed = tableview.T
     # Format the DataFrame as a table
-    table: str = tabulate(df_transposed, headers='keys', tablefmt='psql', showindex=True)
+    #table: str = tabulate(tableview_transposed, headers='keys', tablefmt='psql', showindex=True)
 
     # Display the table
     # print(table)
@@ -283,13 +293,24 @@ def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, ma
     [esM.getOptimizationSummary("SourceSinkModel", outputLevel=1).to_excel("Results/SourceSinkModel.xlsx"), ]
     [esM.getOptimizationSummary("StorageModel", outputLevel=1).to_excel("Results/StorageModel.xlsx"), ]
     [esM.getOptimizationSummary("ConversionModel", outputLevel=1).to_excel("Results/ConversionModel.xlsx"), ]
-    df_transposed.to_excel("Results/Summary.xlsx")
+    tableview_transposed.to_excel("Results/Summary.xlsx")
 
-    return df_transposed, srcSnkSummary, convSummary, storSummary, esM, horizon
+    # Create a dictionary to store the results
+    results = {
+        'tableview': tableview_transposed,
+        'srcSnkSummary': srcSnkSummary,  # Replace None with the actual srcSnkSummary calculation
+        'convSummary': convSummary,  # Replace None with the actual convSummary calculation
+        'storSummary': storSummary,  # Replace None with the actual storSummary calculation
+        'esM': esM,  # Replace None with the actual esM calculation
+        'data': data,
+        'alignmentPV': alignmentPV  # Store area_usage as alignmentPV for demonstration purposes
+    }
+
+    return results
 
 
 if __name__ == "__main__":
 
-    result, _, _, _, _, horizon = energy_systems_stats(tilt=7, azimuth=180, maxCapacityPV=30, scale_sink=10,f=.9)
-    print(tabulate(result, headers='keys', tablefmt='psql', showindex=True))
-    print(horizon)
+    result= energy_systems_stats(tilt=7, azimuth=80, maxCapacityPV=30, scale_sink=10, module_width_D=10)
+    print(tabulate(result["tableview"], headers='keys', tablefmt='psql', showindex=True))
+    print(result["alignmentPV"])

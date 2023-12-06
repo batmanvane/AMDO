@@ -1,11 +1,13 @@
 import numpy as np
 import pvlib
 import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 def get_pv_power_profile(latitude: object = 52, longitude: object = 13.5, start: object = 2014, end: object = 2014,
                          surface_tilt: object = 20,
-                         surface_azimuth: object = 180,f=0.3) -> object:
+                         surface_azimuth: object = 180) -> object:
     """
     Fetches PV power profile data using the pvlib library.
 
@@ -30,8 +32,6 @@ def get_pv_power_profile(latitude: object = 52, longitude: object = 13.5, start:
 
     # Call the get_pvgis_hourly function
 
-    horizon=calculateHorizon(f=f,surface_tilt=surface_tilt)
-
     data: object
 
     data, _, _ = pvlib.iotools.get_pvgis_hourly(latitude=latitude,
@@ -41,7 +41,7 @@ def get_pv_power_profile(latitude: object = 52, longitude: object = 13.5, start:
                                                 surface_tilt=surface_tilt,
                                                 surface_azimuth=surface_azimuth,
                                                 usehorizon=True,
-                                                userhorizon=horizon,
+                                                userhorizon=None,
                                                 peakpower=1,  # peakpower (float, default: None) – Nominal power of PV
                                                 # system in kW. Required if pvcalculation=True.
                                                 pvtechchoice='crystSi',  # ({'crystSi', 'CIS', 'CdTe', 'Unknown'},
@@ -53,31 +53,96 @@ def get_pv_power_profile(latitude: object = 52, longitude: object = 13.5, start:
                                                 trackingtype=0,
                                                 pvcalculation=1,
                                                 timeout=30)# Time in seconds to wait for server response before timeout
+
     dataP = data['P']
     dataP.reset_index(drop=True, inplace=True)
-    return dataP / 1000, horizon  # return in kWh
+    return dataP / 1000, data  # return in kWh
 
-def calculateHorizon(f=0.3,surface_tilt=30,azimuthSegments=20,surface_azimuth=180):
+
+def plot_solar_elevation(data):
+
     """
-    Calculates the horizon angle based on the given f and surface_tilt.
+    Plot solar elevation for December 21st and June 21st.
 
     Parameters:
-        f (float): The f parameter.
-        surface_tilt (float): Tilt angle of the PV panels.
+    - data: DataFrame with a datetime-like index and solar elevation data.
 
     Returns:
-        float: The horizon angle.
-
+    - None (displays the plot).
     """
-    alpha = np.zeros(azimuthSegments)
-    azimuthspan=np.arange(0,360,azimuthSegments)
-    i=0
-    for azimuth in azimuthspan:
-        alpha[i]=np.arctan(f*np.sin(surface_tilt*np.pi/180)/(1-f*np.cos(surface_tilt*np.pi/180)))
-        i=i+1
-    alpha=alpha*180/np.pi
-    return alpha
+    # Filter for December 21st
+    december_21_data = data[(data.index.month == 12) & (data.index.day == 21)]
+
+    # Filter for June 21st
+    june_21_data = data[(data.index.month == 6) & (data.index.day == 21)]
+
+    # Plot the data
+    plt.plot(december_21_data.index.hour + december_21_data.index.minute / 60, december_21_data["solar_elevation"],
+             label="Dec 21")
+    plt.plot(june_21_data.index.hour + june_21_data.index.minute / 60, june_21_data["solar_elevation"], label="Jun 21")
+
+    plt.xlabel("Time (hours)")
+    plt.ylabel("Solar Elevation")
+    plt.title("Solar Elevation on Dec 21 and Jun 21 (24-hour timescale)")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+def calculate_module_row_spacing(data, time1='09:00:00', time2='15:00:00', surface_tilt=30, module_width_D=2):
+    """
+    Calculate solar elevation angles at specified times and module row spacing.
+
+    Parameters:
+    - data: DataFrame with a datetime-like index and solar elevation data.
+    - time1: First specified time (default: '09:00:00').
+    - time2: Second specified time (default: '15:00:00').
+    - surface_tilt: Surface tilt angle in degrees (default: 30).
+    - module_width_D: Module width in the same unit as the surface_tilt (default: 1.5).
+
+    Returns:
+    - Dictionary containing elevation angles, module row spacing, and area usage.
+    """
+    # Ensure that the index is in datetime format
+    if not isinstance(data.index, pd.DatetimeIndex):
+        raise ValueError("The DataFrame index should be in datetime format.")
+
+    # Extract the time and solar elevation values
+    time_values = data.index
+    elevation_values = data["solar_elevation"].values
+
+    # Convert specified times to datetime objects
+    time1_dt = pd.to_datetime(time1).time()
+    time2_dt = pd.to_datetime(time2).time()
+
+    # Find the indices corresponding to the specified hours
+    index_time1 = np.argmax(time_values.hour == time1_dt.hour)
+    index_time2 = np.argmax(time_values.hour == time2_dt.hour)
+
+    # Get elevation angles at specified times
+    elevation_angle_time1 = elevation_values[index_time1]
+    elevation_angle_time2 = elevation_values[index_time2]
+
+    # Calculate Height_Difference
+    height_difference = np.sin(np.radians(surface_tilt)) * module_width_D
+
+    # Calculate Module_Row_Spacing_L using the maximum of the two elevation angles
+    min_elevation_angle = max(elevation_angle_time1, elevation_angle_time2)
+    module_row_spacing_L = height_difference / np.tan(np.radians(min_elevation_angle))
+
+    # Calculate Area_Usage
+    area_usage = module_width_D / module_row_spacing_L
+
+    result = {
+        'elevationAngleTimeEarly': elevation_angle_time1,
+        'elevationAngleTimeLate': elevation_angle_time2,
+        'moduleRowSpacingL': module_row_spacing_L,
+        'areaUsage': area_usage
+    }
+
+    return result
+
 
 if __name__ == "__main__":
-    power_profile = get_pv_power_profile()
-    print(power_profile.head())
+    power_profile, data = get_pv_power_profile()
+    plot_solar_elevation(data)
+    result = calculate_module_row_spacing(data)
