@@ -131,7 +131,7 @@ def calculate_module_row_spacing(data, time1='09:00:00', time2='15:00:00', surfa
 
     # Calculate Area_Usage
     area_usage = module_width / (module_row_spacing+np.cos(np.radians(surface_tilt)) * module_width)
-    damping = module_row_spacing/module_row_spacing_no_shadow
+    damping = np.maximum((module_row_spacing_no_shadow-module_row_spacing)/module_row_spacing_no_shadow,0) #simple geometry
     result = {
         'elevationAngleTimeEarly': elevation_angle_time1,
         'elevationAngleTimeLate': elevation_angle_time2,

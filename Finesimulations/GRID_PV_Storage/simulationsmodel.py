@@ -4,9 +4,9 @@
 
 import FINE as fn
 import pandas as pd
-from pandas import Series
+import numpy as np
 from tabulate import tabulate
-from getPVPowerprofile import get_pv_power_profile, calculate_module_row_spacing
+from getPVPowerprofile import get_pv_power_profile, calculate_module_row_spacing, plot_solar_elevation
 
 
 def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, maxCapacityPV=100, fixCapacityPV=None,
@@ -124,7 +124,19 @@ def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, ma
     dataPVgis.rename("location01", inplace=True)
     alignmentPV = calculate_module_row_spacing(data, module_width=module_width, module_row_spacing=moduleRowSpacing)
     damping = alignmentPV["damping"]
-    dataPVgis = dataPVgis * damping
+    # Multiply entries by damping if solar_elevation is smaller than elevarionearly
+    #dataPVgis['solar_elevation'] = dataPVgis.apply(
+    #    lambda x: x['solar_elevation'] * damping if x['solar_elevation'] < alignmentPV["elevationAngleTimeEarly"] else x['solar_elevation'])
+    # Multiply entries by fDamping if solar_elevation is smaller than elevarionearly
+    # models shadowing effects of PV panels
+    dataPVgis = dataPVgis * np.where(data['solar_elevation'] < alignmentPV["elevationAngleTimeEarly"], 1-damping, 1)
+
+    #plot_solar_elevation(data)
+    #dataplot= data
+    #dataplot['solar_elevation']=dataplot['solar_elevation'] * np.where(data['solar_elevation'] < alignmentPV["elevationAngleTimeEarly"], damping, 1)
+    #plot_solar_elevation(dataplot)
+
+
     maxCapacityPV = maxCapacityPV
     esM.add(fn.Source(esM=esM,
                       name='PV',
@@ -301,7 +313,7 @@ def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, ma
     return results
 
 if __name__ == "__main__":
-    tilt= 30
+    tilt= 3
     azimuth= 110
     modulRowSpacing= 3
 
