@@ -12,51 +12,42 @@ from getPVPowerprofile import get_pv_power_profile, calculate_module_row_spacing
 def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, maxCapacityPV=100, fixCapacityPV=None,
                          maxCapacityST=100, fixCapacityST=5,
                          start=2014, end=2014, investPerCapacityPV=800, investPerCapacityST=700, relEmissionCosts=50,
-                         scale_sink=1,f=0.3):
+                         scale_sink=1, module_width=2, moduleRowSpacing=30):
     """
-    Calculates the statistics of an energy system model based on the given parameters.
+   Calculates the statistics of an energy system model based on the given parameters.
 
-    Args:
-        tilt (int, optional): Tilt angle of the PV panels in degrees. Defaults to 20.
-        azimuth (int, optional): Azimuth angle of the PV panels in degrees. Defaults to 180.
-        longitude (float, optional): Longitude of the location. Defaults to 13.5.
-        latitude (float, optional): Latitude of the location. Defaults to 52.5.
-        maxCapacityPV (int, optional): Maximum capacity of PV panels in kW. Defaults to 100.
-        fixCapacityPV (int, optional): Fixed capacity of PV panels in kW. Defaults to None.
-        maxCapacityST (int, optional): Maximum capacity of storage in kW. Defaults to 100.
-        fixCapacityST (int, optional): Fixed capacity of storage in kW. Defaults to 5.
-        start (int, optional): Start year of the simulation. Defaults to 2014.
-        end (int, optional): End year of the simulation. Defaults to 2014.
-        investPerCapacityPV (int, optional): Investment cost per capacity of PV panels in Euro. Defaults to 800.
-        investPerCapacityST (int, optional): Investment cost per capacity of storage in Euro. Defaults to 700.
-        relEmissionCosts (int, optional): Relative emission costs in Euro per ton of CO2 equivalent. Defaults to 50.
-        scale_sink (int, optional): Scaling factor for the electricity load demand profile. Defaults to 1.
-        f (float, optional): Scaling factor for the maximum capacity of PV panels. Defaults to 0.3.
+   Args:
+       tilt (int, optional): Tilt angle of the PV panels in degrees. Defaults to 20.
+       azimuth (int, optional): Azimuth angle of the PV panels in degrees. Defaults to 180.
+       longitude (float, optional): Longitude of the location. Defaults to 13.5.
+       latitude (float, optional): Latitude of the location. Defaults to 52.5.
+       maxCapacityPV (int, optional): Maximum capacity of PV panels in kW. Defaults to 100.
+       fixCapacityPV (int, optional): Fixed capacity of PV panels in kW. Defaults to None.
+       maxCapacityST (int, optional): Maximum capacity of storage in kW. Defaults to 100.
+       fixCapacityST (int, optional): Fixed capacity of storage in kW. Defaults to 5.
+       start (int, optional): Start year of the simulation. Defaults to 2014.
+       end (int, optional): End year of the simulation. Defaults to 2014.
+       investPerCapacityPV (int, optional): Investment cost per capacity of PV panels in Euro. Defaults to 800.
+       investPerCapacityST (int, optional): Investment cost per capacity of storage in Euro. Defaults to 700.
+       relEmissionCosts (int, optional): Relative emission costs in Euro per ton of CO2 equivalent. Defaults to 50.
+       scale_sink (int, optional): Scaling factor for the electricity load demand profile. Defaults to 1.
+       f (float, optional): Scaling factor for the maximum capacity of PV panels. Defaults to 0.3.
 
-    Returns:
-        Returns:
-        - Dictionary containing the following variables:
-            - 'df_transposed': Transposed DataFrame for tabular view.
-            - 'srcSnkSummary': Summary for source and sink.
-            - 'convSummary': Conversion summary.
-            - 'storSummary': Storage summary.
-            - 'esM': Energy system model.
-            - 'data': Original data.
-            - 'alignmentPV': PV alignment result.
-    """
-    # Function code goes here
-    pass
-def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, maxCapacityPV=100, fixCapacityPV=None,
-                         maxCapacityST=100, fixCapacityST=5,
-                         start=2014, end=2014, investPerCapacityPV=800, investPerCapacityST=700, relEmissionCosts=50,
-                         scale_sink=1,module_width=2):
-    """
-    input: tilt, azimuth, long, lat, maxCapacityPV, fixCapacityPV, maxCapacityST, fixCapacityST, investPerCapacityPV,
-    investPerCapacityST, relEmissionCosts) returns stats at table
-    """
+   Returns:
+   - Dictionary containing the following variables:
+       - 'df_transposed': Transposed DataFrame for tabular view.
+       - 'srcSnkSummary': Summary for source and sink.
+       - 'convSummary': Conversion summary.
+       - 'storSummary': Storage summary.
+       - 'esM': Energy system model.
+       - 'data': Original data.
+       - 'alignmentPV': PV alignment result.
+   """
     # Define Components of EnergySystemModel
 
     # 1. Define locations of the energy system model
+
+
     locations = {'location01'}
     # 2. Define commodities and units of commodities
     commodities = {'sink_1_commodity',
@@ -129,11 +120,12 @@ def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, ma
     # load PV data
     # dataPV = pd.read_excel("DataForExample/PV_1.xlsx")
     dataPVgis, data = get_pv_power_profile(latitude, longitude, start, end, surface_tilt=tilt,
-                                             surface_azimuth=azimuth)
+                                           surface_azimuth=azimuth)
     dataPVgis.rename("location01", inplace=True)
-    alignmentPV = calculate_module_row_spacing(data,module_width=module_width)
-    f=alignmentPV["areaUsage"]
-    maxCapacityPV=maxCapacityPV*f
+    alignmentPV = calculate_module_row_spacing(data, module_width=module_width, module_row_spacing=moduleRowSpacing)
+    damping = alignmentPV["damping"]
+    dataPVgis = dataPVgis * damping
+    maxCapacityPV = maxCapacityPV
     esM.add(fn.Source(esM=esM,
                       name='PV',
                       commodity=source_2,
@@ -284,7 +276,7 @@ def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, ma
     # Transpose the DataFrame
     tableview_transposed = tableview.T
     # Format the DataFrame as a table
-    #table: str = tabulate(tableview_transposed, headers='keys', tablefmt='psql', showindex=True)
+    # table: str = tabulate(tableview_transposed, headers='keys', tablefmt='psql', showindex=True)
 
     # Display the table
     # print(table)
@@ -308,9 +300,8 @@ def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, ma
 
     return results
 
-
 if __name__ == "__main__":
-
-    result= energy_systems_stats(tilt=30, azimuth=110, maxCapacityPV=30, scale_sink=10, module_width=20)
+    result = energy_systems_stats(tilt=30, azimuth=110, fixCapacityPV=30, maxCapacityPV=30, scale_sink=10,
+                                  module_width=20, moduleRowSpacing=30)
     print(tabulate(result["tableview"], headers='keys', tablefmt='psql', showindex=True))
     print(result["alignmentPV"])
