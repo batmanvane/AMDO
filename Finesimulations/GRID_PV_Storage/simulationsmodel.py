@@ -301,7 +301,11 @@ def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, ma
     return results
 
 if __name__ == "__main__":
-    result = energy_systems_stats(tilt=30, azimuth=110, fixCapacityPV=30, maxCapacityPV=30, scale_sink=10,
-                                  module_width=20, moduleRowSpacing=30)
+    tilt= 30
+    azimuth= 110
+    modulRowSpacing= 3
+
+    result = energy_systems_stats(tilt=tilt, azimuth=azimuth, fixCapacityPV=100, maxCapacityPV=100, scale_sink=10,
+                                  module_width=2, moduleRowSpacing=modulRowSpacing)
     print(tabulate(result["tableview"], headers='keys', tablefmt='psql', showindex=True))
     print(result["alignmentPV"])
