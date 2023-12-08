@@ -134,41 +134,13 @@ def energySystemsStats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, maxC
     dampingLow = alignmentPVlow["damping"]
     dampingHigh = alignmentPVHigh["damping"]
 
-    print(dampingLow, dampingHigh)
-    PAUSE = input("Press enter to continue")
-    dataPVgis = dataPVgis * (1 - dampingLow)
-
-    # Multiply entries by damping if solar_elevation is smaller than elevarionearly
-    # dataPVgis['solar_elevation'] = dataPVgis.apply(
-    #    lambda x: x['solar_elevation'] * damping if x['solar_elevation'] < alignmentPV["elevationAngleTimeEarly"] else x['solar_elevation'])
-    # Multiply entries by Damping if solar_elevation is smaller than elevarionearly
-    # models shadowing effects of PV panels
-    # dataPVgisDamp = dataPVgis * np.where(data['solar_elevation'] < alignmentPV["elevationAngleTimeEarly"], 1 - 0.5, 1)
-    # plt.plot(dataPVgis, label='Original dataPVgis')
-    # plt.plot(dataPVgisDamp, label='Modified dataPVgisdamp')
-    #                                 1)
-
-    # # Adding labels and title
-    # plt.xlabel('X-axis Label')
-    # plt.ylabel('Y-axis Label')
-    # plt.title('Comparison of Original and Modified DataPVgis')
-
-    ## Display legend
-    # plt.legend()
-    # plt.savefig('resultDamping.pdf')
-    # # Show the plot
-    # plt.show()
-
-    # plotSolarElevation(data)
-    # dataplot= data
-    # dataplot['solar_elevation']=dataplot['solar_elevation'] * np.where(data['solar_elevation'] < alignmentPV["elevationAngleTimeEarly"], damping, 1)
-    # plotSolarElevation(dataplot)
+    dataPVgis = dataPVgis * (1 - (dampingLow+ dampingHigh) / 2) # correct for power damping due to shading
 
     esM.add(fn.Source(esM=esM,
                       name='PV',
                       commodity=source_2,
                       hasCapacityVariable=True,
-                      capacityFix=fixCapacityPV * module_width / 1.5,  # minimal capacity to be installed
+                      capacityFix=fixCapacityPV * module_width / 1.5,  # note: 1 kWp = 1.5m rowminimal capacity to be installed
                       capacityMax=maxCapacityPV * module_width / 1.5,  # maximal possible capacity
                       operationRateMax=dataPVgis,
                       investPerCapacity=investPerCapacityPV,
@@ -346,7 +318,7 @@ def energySystemsStats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, maxC
     return results
 
 if __name__ == "__main__":
-    tilt = 80
+    tilt = 40
     azimuth = 110
     modulRowSpacing = 3
     capacityStorage = 5
