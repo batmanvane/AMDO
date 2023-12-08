@@ -344,7 +344,7 @@ if __name__ == "__main__":
     #         objective_CO2 = result['tableview'].loc['operationTotCO2'].values[0]
     #         objectiveSelfSufficiency = result['tableview'].loc['selfsufficiency'].values[0]
     #         objectiveSelfConsumption = result['tableview'].loc['selfconsumption'].values[0]
-    #         return [objectiveTAC, -objectiveSelfSufficiency]
+    #         return [objectiveTAC, objectiveSelfSufficiency]
     #     except Exception as e:
     #         print(e)
     #         return [np.inf, np.inf]
@@ -360,7 +360,7 @@ if __name__ == "__main__":
     #     return False
     #
     #     # Define the NSGA-II algorithm parameters
-    # creator.create("FitnessMulti", base.Fitness, weights=(-1.0, -1.0))  # Minimize both objectives
+    # creator.create("FitnessMulti", base.Fitness, weights=(-1.0, 1.0))  # Minimize both objectives
     # creator.create("Individual", list, fitness=creator.FitnessMulti)
     #
     # toolbox = base.Toolbox()
@@ -383,7 +383,7 @@ if __name__ == "__main__":
     #
     #     # Number of generations and population size (adjust as needed)
     # ngen = 5
-    # pop_size = 5
+    # pop_size = 50
     #
     # # Create an initial population
     # population = toolbox.population(n=pop_size)
@@ -417,11 +417,11 @@ if __name__ == "__main__":
     # all_solutions = np.array([ind.fitness.values for ind in population])
     #
     # # Scatter plot of all solutions
-    # plt.scatter(all_solutions[:, 0], -all_solutions[:, 1], label='All Solutions', alpha=0.5)
+    # plt.scatter(all_solutions[:, 0], all_solutions[:, 1], label='All Solutions', alpha=0.5)
     #
     # # Highlight Pareto front solutions
     # pareto_solutions = np.array([ind.fitness.values for ind in pareto_front])
-    # plt.scatter(pareto_solutions[:, 0], -pareto_solutions[:, 1], label='Pareto Front', color='red')
+    # plt.scatter(pareto_solutions[:, 0], pareto_solutions[:, 1], label='Pareto Front', color='red')
     #
     # # Set x-axis to logarithmic scale
     # plt.xscale('log')
