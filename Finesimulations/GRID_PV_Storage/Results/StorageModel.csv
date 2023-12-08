@@ -7,10 +7,10 @@ STORAGE,commissioning,[kW_el*h],5.0
 STORAGE,decommissioning,[kW_el*h],0.0
 STORAGE,invest,[1e Euro],3500.0
 STORAGE,investLifetimeExtension,[1e Euro],0
-STORAGE,operationCharge,[kW_el*h/a],1574.9999999999998
-STORAGE,operationCharge,[kW_el*h],1574.9999999999998
-STORAGE,operationDischarge,[kW_el*h/a],1421.1992522390833
-STORAGE,operationDischarge,[kW_el*h],1421.1992522390833
+STORAGE,operationCharge,[kW_el*h/a],1574.9999999999995
+STORAGE,operationCharge,[kW_el*h],1574.9999999999995
+STORAGE,operationDischarge,[kW_el*h/a],1421.2015743192915
+STORAGE,operationDischarge,[kW_el*h],1421.2015743192915
 STORAGE,opexCap,[1e Euro/a],17.5
 STORAGE,opexCharge,[1e Euro/a],0.0
 STORAGE,opexDischarge,[1e Euro/a],0.0

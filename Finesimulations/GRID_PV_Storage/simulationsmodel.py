@@ -128,46 +128,19 @@ def energySystemsStats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, maxC
     june_21_data = data[(data.index.month == 6) & (data.index.day == 21)]
 
     alignmentPVlow = calculate_moduleRowSpacing(december_21_data, module_width=module_width,
-                                                  moduleRowSpacing=moduleRowSpacing)
+                                                  moduleRowSpacing=moduleRowSpacing,surface_tilt=tilt)
     alignmentPVHigh = calculate_moduleRowSpacing(june_21_data, module_width=module_width,
-                                                   moduleRowSpacing=moduleRowSpacing)
+                                                   moduleRowSpacing=moduleRowSpacing,surface_tilt=tilt)
     dampingLow = alignmentPVlow["damping"]
     dampingHigh = alignmentPVHigh["damping"]
 
-    print(dampingLow, dampingHigh)
-    dataPVgis = dataPVgis * (1 - (dampingLow + dampingHigh) / 2)
-
-    # Multiply entries by damping if solar_elevation is smaller than elevarionearly
-    # dataPVgis['solar_elevation'] = dataPVgis.apply(
-    #    lambda x: x['solar_elevation'] * damping if x['solar_elevation'] < alignmentPV["elevationAngleTimeEarly"] else x['solar_elevation'])
-    # Multiply entries by Damping if solar_elevation is smaller than elevarionearly
-    # models shadowing effects of PV panels
-    # dataPVgisDamp = dataPVgis * np.where(data['solar_elevation'] < alignmentPV["elevationAngleTimeEarly"], 1 - 0.5, 1)
-    # plt.plot(dataPVgis, label='Original dataPVgis')
-    # plt.plot(dataPVgisDamp, label='Modified dataPVgisdamp')
-    #                                 1)
-
-    # # Adding labels and title
-    # plt.xlabel('X-axis Label')
-    # plt.ylabel('Y-axis Label')
-    # plt.title('Comparison of Original and Modified DataPVgis')
-
-    ## Display legend
-    # plt.legend()
-    # plt.savefig('resultDamping.pdf')
-    # # Show the plot
-    # plt.show()
-
-    # plotSolarElevation(data)
-    # dataplot= data
-    # dataplot['solar_elevation']=dataplot['solar_elevation'] * np.where(data['solar_elevation'] < alignmentPV["elevationAngleTimeEarly"], damping, 1)
-    # plotSolarElevation(dataplot)
+    dataPVgis = dataPVgis * (1 - (dampingLow+ dampingHigh) / 2) # correct for power damping due to shading
 
     esM.add(fn.Source(esM=esM,
                       name='PV',
                       commodity=source_2,
                       hasCapacityVariable=True,
-                      capacityFix=fixCapacityPV * module_width / 1.5,  # minimal capacity to be installed
+                      capacityFix=fixCapacityPV * module_width / 1.5,  # note: 1 kWp = 1.5m rowminimal capacity to be installed
                       capacityMax=maxCapacityPV * module_width / 1.5,  # maximal possible capacity
                       operationRateMax=dataPVgis,
                       investPerCapacity=investPerCapacityPV,
@@ -345,15 +318,16 @@ def energySystemsStats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, maxC
     return results
 
 if __name__ == "__main__":
-    # tilt = 20
+    # tilt = 40
     # azimuth = 110
     # modulRowSpacing = 3
-    # storage = 5
+    # capacityStorage = 5
+    # capacityPV = 100
     #
-    # energySystemsStats(tilt=tilt, azimuth=azimuth, fixCapacityST=storage, maxCapacityST=storage, fixCapacityPV=100,
-    #                      maxCapacityPV=100, scale_sink=10,
-    #                      module_width=1.5, moduleRowSpacing=modulRowSpacing)
-    #
+    # results=energySystemsStats(tilt=tilt, azimuth=azimuth, fixCapacityST=capacityStorage, maxCapacityST=capacityStorage, fixCapacityPV=capacityPV,
+    #                       maxCapacityPV=capacityPV, scale_sink=10,
+    #                       module_width=1.5, moduleRowSpacing=modulRowSpacing)
+
     from deap import base, creator, tools, algorithms
     from concurrent.futures import ThreadPoolExecutor
     import concurrent.futures
@@ -393,15 +367,15 @@ if __name__ == "__main__":
     toolbox.register("attr_float", np.random.uniform, 0, 1)
     toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attr_float, n=5)
     # Define the box constraints for each variable
-    low_bounds = [1, 30, 0.5, 1, 1.5]  # tilt, azimuth, modulRowSpacing, minStorage, moduleWidth
-    up_bounds = [85, 330, 10, 100, 4]  # tilt, azimuth, modulRowSpacing, minStorage, moduleWidth
+    low_bounds = [1, 90, 1, 1, 1.5]  # tilt, azimuth, modulRowSpacing, minStorage, moduleWidth
+    up_bounds = [85, 270, 10, 100, 4]  # tilt, azimuth, modulRowSpacing, minStorage, moduleWidth
     toolbox.register("mate", tools.cxSimulatedBinaryBounded, low=low_bounds, up=up_bounds, eta=15)
     toolbox.register("mutate", tools.mutPolynomialBounded,indpb=0.2, low=low_bounds, up=up_bounds, eta=20)
 
     toolbox.register("population", tools.initRepeat, list, toolbox.individual)
     toolbox.register("select", tools.selNSGA2)
     toolbox.register("evaluate", multi_objective_function)
-    toolbox.decorate("evaluate", tools.DeltaPenalty(feasible, 1e9))
+  #  toolbox.decorate("evaluate", tools.DeltaPenalty(feasible, 1e9))
 
 
     def evaluate_parallel(individual):
@@ -409,13 +383,13 @@ if __name__ == "__main__":
 
         # Number of generations and population size (adjust as needed)
     ngen = 50
-    pop_size = 20
+    pop_size = 100
 
     # Create an initial population
     population = toolbox.population(n=pop_size)
 
     # Use ThreadPoolExecutor for parallel evaluation of individuals
-    with ThreadPoolExecutor() as executor:
+    with ThreadPoolExecutor(max_workers=15) as executor:
         futures = {executor.submit(toolbox.evaluate, ind): ind for ind in population}
         for future in concurrent.futures.as_completed(futures):
             ind = futures[future]
@@ -443,14 +417,14 @@ if __name__ == "__main__":
     all_solutions = np.array([ind.fitness.values for ind in population])
 
     # Scatter plot of all solutions
-    plt.scatter(all_solutions[:, 0], -all_solutions[:, 1], label='All Solutions', alpha=0.5)
+    plt.scatter(all_solutions[:, 0], all_solutions[:, 1], label='All Solutions', alpha=0.5)
 
     # Highlight Pareto front solutions
     pareto_solutions = np.array([ind.fitness.values for ind in pareto_front])
-    plt.scatter(pareto_solutions[:, 0], -pareto_solutions[:, 1], label='Pareto Front', color='red')
+    plt.scatter(pareto_solutions[:, 0], pareto_solutions[:, 1], label='Pareto Front', color='red')
 
     # Set x-axis to logarithmic scale
-    plt.xscale('log')
+    #plt.xscale('log')
 
     plt.xlabel('TAC')
     plt.ylabel('Selfsufficiency')
@@ -461,3 +435,48 @@ if __name__ == "__main__":
     plt.savefig('resultLastGeneration.pdf')
 
     plt.show()
+
+    # Transpose the list for easier access to columns
+    pareto_front_transposed = list(map(list, zip(*pareto_front)))
+
+    # Create a single figure for all histograms
+    fig, axes = plt.subplots(nrows=1, ncols=len(pareto_front_transposed), figsize=(15, 5))
+
+    # Create histograms for each column
+    for i, (column_values, label) in enumerate(
+            zip(pareto_front_transposed, ["tilt °", "azimuth °", "modulRowSpacing m", "storage kWh", "moduleWidth m"])):
+        axes[i].hist(column_values, bins=10, edgecolor='black')
+        axes[i].set_title(f'Histogram for {label}')
+        axes[i].set_xlabel(f'{label} (Pareto Optimal)')
+        axes[i].set_ylabel('Frequency')
+
+    # Adjust layout to prevent overlap
+    plt.tight_layout()
+
+    # Save the plot as a PDF file
+    plt.savefig('resultHistograms.pdf')
+
+    # Show the combined figure
+    plt.show()
+
+# Convert the list to a NumPy array
+pareto_front_array = np.array(pareto_front)
+
+# Create a DataFrame
+df = pd.DataFrame(data=pareto_front_array, columns=["tilt", "azimuth", "modulRowSpacing", "storage", "moduleWidth"])
+
+# Create a pairwise interaction matrix (correlation matrix)
+corr_matrix = df.corr()
+
+# Set up the matplotlib figure
+fig, ax = plt.subplots(figsize=(8, 6))
+
+# Draw the heatmap with seaborn
+sns.heatmap(corr_matrix, annot=True, cmap="coolwarm", fmt=".2f", vmin=-1, vmax=1)
+
+# Save and Show the plot
+plt.title("Pairwise Interaction Matrix Pareto Solutions")
+# Save the plot as a PDF file
+plt.savefig('resultInteraction.pdf')
+
+plt.show()

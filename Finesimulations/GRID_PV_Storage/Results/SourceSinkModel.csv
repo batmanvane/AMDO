@@ -1,10 +1,10 @@
 Component,Property,Unit,location01
-GRID,NPVcontribution,[1e Euro],3053.3717047519967
-GRID,TAC,[1e Euro/a],3053.3717047519935
-GRID,commodCosts,[1e Euro/a],3053.3717047519935
+GRID,NPVcontribution,[1e Euro],3090.9742896076323
+GRID,TAC,[1e Euro/a],3090.9742896076295
+GRID,commodCosts,[1e Euro/a],3090.9742896076295
 GRID,commodRevenues,[1e Euro/a],0.0
-GRID,operation,[kW_el*h/a],8723.919156434198
-GRID,operation,[kW_el*h],8723.919156434198
+GRID,operation,[kW_el*h/a],8831.355113164813
+GRID,operation,[kW_el*h],8831.355113164813
 GRID,opexOp,[1e Euro/a],0.0
 PV,NPVcontribution,[1e Euro],6876.196583938373
 PV,TAC,[1e Euro/a],6876.196583938367
@@ -16,18 +16,18 @@ PV,commodRevenues,[1e Euro/a],0.0
 PV,decommissioning,[kW_el],0.0
 PV,invest,[1e Euro],80000.0
 PV,investLifetimeExtension,[1e Euro],0
-PV,operation,[kW_el*h/a],89076.78952001187
-PV,operation,[kW_el*h],89076.78952001187
+PV,operation,[kW_el*h/a],79354.61403309148
+PV,operation,[kW_el*h],79354.61403309148
 PV,opexCap,[1e Euro/a],1200.0
 PV,opexOp,[1e Euro/a],0.0
 PV,revenueLifetimeShorteningResale,[1e Euro],0
-environment,NPVcontribution,[1e Euro],148176.20898574303
-environment,TAC,[1e Euro/a],148176.2089857429
+environment,NPVcontribution,[1e Euro],149626.59324056318
+environment,TAC,[1e Euro/a],149626.59324056303
 environment,commodCosts,[1e Euro/a],0.0
 environment,commodRevenues,[1e Euro/a],0.0
-environment,operation,[t_CO2e*h/a],2963.524179714889
-environment,operation,[t_CO2e*h],2963.524179714889
-environment,opexOp,[1e Euro/a],148176.2089857429
+environment,operation,[t_CO2e*h/a],2992.5318648112884
+environment,operation,[t_CO2e*h],2992.5318648112884
+environment,opexOp,[1e Euro/a],149626.59324056303
 sink_1,NPVcontribution,[1e Euro],0.0
 sink_1,TAC,[1e Euro/a],0.0
 sink_1,commodCosts,[1e Euro/a],0.0
@@ -35,10 +35,10 @@ sink_1,commodRevenues,[1e Euro/a],0.0
 sink_1,operation,[kW_el*h/a],20217.59999999971
 sink_1,operation,[kW_el*h],20217.59999999971
 sink_1,opexOp,[1e Euro/a],0.0
-spot,NPVcontribution,[1e Euro],-3871.465396434346
-spot,TAC,[1e Euro/a],-3871.4653964343424
+spot,NPVcontribution,[1e Euro],-3390.728536028876
+spot,TAC,[1e Euro/a],-3390.728536028873
 spot,commodCosts,[1e Euro/a],0.0
-spot,commodRevenues,[1e Euro/a],3871.4653964343424
-spot,operation,[kW_el*h/a],77429.30792868507
-spot,operation,[kW_el*h],77429.30792868507
+spot,commodRevenues,[1e Euro/a],3390.728536028873
+spot,operation,[kW_el*h/a],67814.57072057677
+spot,operation,[kW_el*h],67814.57072057677
 spot,opexOp,[1e Euro/a],0.0
