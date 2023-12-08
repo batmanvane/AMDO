@@ -127,7 +127,7 @@ def calculate_moduleRowSpacing(data, time='10:00:00', surface_tilt=30, module_wi
     moduleRowSpacing_no_shadow= height_difference / np.tan(np.radians(min_elevation_angle))
     # Calculate areaUsage
     areaUsage = module_width / (moduleRowSpacing+np.cos(np.radians(surface_tilt)) * module_width)
-    damping = np.maximum((moduleRowSpacing_no_shadow-moduleRowSpacing)/(moduleRowSpacing_no_shadow+np.cos(np.radians(surface_tilt))+1e-6),0) #simple geometry
+    damping = np.maximum((moduleRowSpacing_no_shadow+np.cos(np.radians(surface_tilt))-moduleRowSpacing)/(moduleRowSpacing_no_shadow+np.cos(np.radians(surface_tilt))+1e-6),0) #simple geometry
     result = {
         'elevationAngleTime': elevationAngleTime,
         'moduleRowSpacingL': moduleRowSpacing,

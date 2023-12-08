@@ -1,16 +1,16 @@
 Component,Property,Unit,location01
 conversion_1,NPVcontribution,[1e Euro],0.0
 conversion_1,TAC,[1e Euro/a],0.0
-conversion_1,operation,[kW_el*h/a],8723.919156434198
-conversion_1,operation,[kW_el*h],8723.919156434198
+conversion_1,operation,[kW_el*h/a],8831.355113164813
+conversion_1,operation,[kW_el*h],8831.355113164813
 conversion_1,opexOp,[1e Euro/a],0.0
 conversion_2,NPVcontribution,[1e Euro],0.0
 conversion_2,TAC,[1e Euro/a],0.0
-conversion_2,operation,[kW_el*h/a],11647.481591326768
-conversion_2,operation,[kW_el*h],11647.481591326768
+conversion_2,operation,[kW_el*h/a],11540.043312516158
+conversion_2,operation,[kW_el*h],11540.043312516158
 conversion_2,opexOp,[1e Euro/a],0.0
 conversion_3,NPVcontribution,[1e Euro],0.0
 conversion_3,TAC,[1e Euro/a],0.0
-conversion_3,operation,[kW_el*h/a],11493.680843566133
-conversion_3,operation,[kW_el*h],11493.680843566133
+conversion_3,operation,[kW_el*h/a],11386.244886835393
+conversion_3,operation,[kW_el*h],11386.244886835393
 conversion_3,opexOp,[1e Euro/a],0.0
