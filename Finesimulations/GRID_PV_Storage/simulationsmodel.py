@@ -345,119 +345,119 @@ def energySystemsStats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, maxC
     return results
 
 if __name__ == "__main__":
-    tilt = 20
-    azimuth = 110
-    modulRowSpacing = 3
-    storage = 5
+    # tilt = 20
+    # azimuth = 110
+    # modulRowSpacing = 3
+    # storage = 5
+    #
+    # energySystemsStats(tilt=tilt, azimuth=azimuth, fixCapacityST=storage, maxCapacityST=storage, fixCapacityPV=100,
+    #                      maxCapacityPV=100, scale_sink=10,
+    #                      module_width=1.5, moduleRowSpacing=modulRowSpacing)
+    #
+    from deap import base, creator, tools, algorithms
+    from concurrent.futures import ThreadPoolExecutor
+    import concurrent.futures
+    import matplotlib.pyplot as plt
 
-    energySystemsStats(tilt=tilt, azimuth=azimuth, fixCapacityST=storage, maxCapacityST=storage, fixCapacityPV=100,
-                         maxCapacityPV=100, scale_sink=10,
-                         module_width=1.5, moduleRowSpacing=modulRowSpacing)
-    #
-    # from deap import base, creator, tools, algorithms
-    # from concurrent.futures import ThreadPoolExecutor
-    # import concurrent.futures
-    # import matplotlib.pyplot as plt
-    #
-    # def multi_objective_function(params):
-    #     try:
-    #         tilt, azimuth, modulRowSpacing, storage, moduleWidth = params
-    #         result = energySystemsStats(tilt=tilt, azimuth=azimuth, fixCapacityST=storage,maxCapacityST=storage,fixCapacityPV=100, maxCapacityPV=100,
-    #                                       scale_sink=10, module_width=moduleWidth, moduleRowSpacing=modulRowSpacing)
-    #
-    #         # Minimize both TAC and CO2
-    #         objectiveTAC = result['tableview'].loc['TAC'].values[0]
-    #         objective_CO2 = result['tableview'].loc['operationTotCO2'].values[0]
-    #         objectiveSelfSufficiency = result['tableview'].loc['selfsufficiency'].values[0]
-    #         objectiveSelfConsumption = result['tableview'].loc['selfconsumption'].values[0]
-    #         return [objectiveTAC, -objectiveSelfSufficiency]
-    #     except Exception as e:
-    #         print(e)
-    #         return [np.inf, np.inf]
-    #
-    # def feasible(individual):
-    #     """Feasibility function for the individual. Returns True if feasible, False otherwise."""
-    #     if 1 < individual[0] < 85:
-    #         if 30 < individual[1] < 330:
-    #             if 0.5 < individual[2] < 10:
-    #                 if 1 < individual[3] < 100:
-    #                     if 1.5 < individual[4] < 4:
-    #                         return True
-    #     return False
-    #
-    #     # Define the NSGA-II algorithm parameters
-    # creator.create("FitnessMulti", base.Fitness, weights=(-1.0, -1.0))  # Minimize both objectives
-    # creator.create("Individual", list, fitness=creator.FitnessMulti)
-    #
-    # toolbox = base.Toolbox()
-    # toolbox.register("attr_float", np.random.uniform, 0, 1)
-    # toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attr_float, n=5)
-    # # Define the box constraints for each variable
-    # low_bounds = [1, 30, 0.5, 1, 1.5]  # tilt, azimuth, modulRowSpacing, minStorage, moduleWidth
-    # up_bounds = [85, 330, 10, 100, 4]  # tilt, azimuth, modulRowSpacing, minStorage, moduleWidth
-    # toolbox.register("mate", tools.cxSimulatedBinaryBounded, low=low_bounds, up=up_bounds, eta=15)
-    # toolbox.register("mutate", tools.mutPolynomialBounded,indpb=0.2, low=low_bounds, up=up_bounds, eta=20)
-    #
-    # toolbox.register("population", tools.initRepeat, list, toolbox.individual)
-    # toolbox.register("select", tools.selNSGA2)
-    # toolbox.register("evaluate", multi_objective_function)
-    # toolbox.decorate("evaluate", tools.DeltaPenalty(feasible, 1e9))
-    #
-    #
-    # def evaluate_parallel(individual):
-    #     return multi_objective_function(individual),
-    #
-    #     # Number of generations and population size (adjust as needed)
-    # ngen = 50
-    # pop_size = 20
-    #
-    # # Create an initial population
-    # population = toolbox.population(n=pop_size)
-    #
-    # # Use ThreadPoolExecutor for parallel evaluation of individuals
-    # with ThreadPoolExecutor() as executor:
-    #     futures = {executor.submit(toolbox.evaluate, ind): ind for ind in population}
-    #     for future in concurrent.futures.as_completed(futures):
-    #         ind = futures[future]
-    #         try:
-    #             fitness_values = future.result()
-    #             ind.fitness.values = fitness_values
-    #         except Exception as e:
-    #             print(f"Error in evaluating individual {ind}: {e}")
-    #
-    # # Use eaMuPlusLambda without the evaluate keyword
-    # algorithms.eaMuPlusLambda(population, toolbox, mu=pop_size, lambda_=2 * pop_size, cxpb=0.7, mutpb=0.2, ngen=ngen,
-    #                           stats=None, halloffame=None, verbose=True)
-    #
-    # # Extracting Pareto front (non-dominated solutions)
-    # pareto_front = tools.sortNondominated(population, len(population), first_front_only=True)[0]
-    #
-    # # Displaying the Pareto front solutions
-    # print("Pareto Front Solutions:")
-    # for ind in pareto_front:
-    #     print("Tilt:", ind[0], "Azimuth:", ind[1], "ModulRowSpacing:", ind[2], "Storage:", ind[3], "ModuleWidth:", ind[4])
-    #     print("Objectives (TAC, Selfsufficiency):", multi_objective_function(ind))
-    #     print("---")
-    #
-    # # Extracting all solutions
-    # all_solutions = np.array([ind.fitness.values for ind in population])
-    #
-    # # Scatter plot of all solutions
-    # plt.scatter(all_solutions[:, 0], -all_solutions[:, 1], label='All Solutions', alpha=0.5)
-    #
-    # # Highlight Pareto front solutions
-    # pareto_solutions = np.array([ind.fitness.values for ind in pareto_front])
-    # plt.scatter(pareto_solutions[:, 0], -pareto_solutions[:, 1], label='Pareto Front', color='red')
-    #
-    # # Set x-axis to logarithmic scale
-    # plt.xscale('log')
-    #
-    # plt.xlabel('TAC')
-    # plt.ylabel('Selfsufficiency')
-    # plt.title('Scatter Plot of All Solutions')
-    # plt.legend()
-    #
-    # # Save the plot as a PDF file
-    # plt.savefig('resultLastGeneration.pdf')
-    #
-    # plt.show()
+    def multi_objective_function(params):
+        try:
+            tilt, azimuth, modulRowSpacing, storage, moduleWidth = params
+            result = energySystemsStats(tilt=tilt, azimuth=azimuth, fixCapacityST=storage,maxCapacityST=storage,fixCapacityPV=100, maxCapacityPV=100,
+                                          scale_sink=10, module_width=moduleWidth, moduleRowSpacing=modulRowSpacing)
+
+            # Minimize both TAC and CO2
+            objectiveTAC = result['tableview'].loc['TAC'].values[0]
+            objective_CO2 = result['tableview'].loc['operationTotCO2'].values[0]
+            objectiveSelfSufficiency = result['tableview'].loc['selfsufficiency'].values[0]
+            objectiveSelfConsumption = result['tableview'].loc['selfconsumption'].values[0]
+            return [objectiveTAC, -objectiveSelfSufficiency]
+        except Exception as e:
+            print(e)
+            return [np.inf, np.inf]
+
+    def feasible(individual):
+        """Feasibility function for the individual. Returns True if feasible, False otherwise."""
+        if 1 < individual[0] < 85:
+            if 30 < individual[1] < 330:
+                if 0.5 < individual[2] < 10:
+                    if 1 < individual[3] < 100:
+                        if 1.5 < individual[4] < 4:
+                            return True
+        return False
+
+        # Define the NSGA-II algorithm parameters
+    creator.create("FitnessMulti", base.Fitness, weights=(-1.0, -1.0))  # Minimize both objectives
+    creator.create("Individual", list, fitness=creator.FitnessMulti)
+
+    toolbox = base.Toolbox()
+    toolbox.register("attr_float", np.random.uniform, 0, 1)
+    toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attr_float, n=5)
+    # Define the box constraints for each variable
+    low_bounds = [1, 30, 0.5, 1, 1.5]  # tilt, azimuth, modulRowSpacing, minStorage, moduleWidth
+    up_bounds = [85, 330, 10, 100, 4]  # tilt, azimuth, modulRowSpacing, minStorage, moduleWidth
+    toolbox.register("mate", tools.cxSimulatedBinaryBounded, low=low_bounds, up=up_bounds, eta=15)
+    toolbox.register("mutate", tools.mutPolynomialBounded,indpb=0.2, low=low_bounds, up=up_bounds, eta=20)
+
+    toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+    toolbox.register("select", tools.selNSGA2)
+    toolbox.register("evaluate", multi_objective_function)
+    toolbox.decorate("evaluate", tools.DeltaPenalty(feasible, 1e9))
+
+
+    def evaluate_parallel(individual):
+        return multi_objective_function(individual),
+
+        # Number of generations and population size (adjust as needed)
+    ngen = 50
+    pop_size = 20
+
+    # Create an initial population
+    population = toolbox.population(n=pop_size)
+
+    # Use ThreadPoolExecutor for parallel evaluation of individuals
+    with ThreadPoolExecutor() as executor:
+        futures = {executor.submit(toolbox.evaluate, ind): ind for ind in population}
+        for future in concurrent.futures.as_completed(futures):
+            ind = futures[future]
+            try:
+                fitness_values = future.result()
+                ind.fitness.values = fitness_values
+            except Exception as e:
+                print(f"Error in evaluating individual {ind}: {e}")
+
+    # Use eaMuPlusLambda without the evaluate keyword
+    algorithms.eaMuPlusLambda(population, toolbox, mu=pop_size, lambda_=2 * pop_size, cxpb=0.7, mutpb=0.2, ngen=ngen,
+                              stats=None, halloffame=None, verbose=True)
+
+    # Extracting Pareto front (non-dominated solutions)
+    pareto_front = tools.sortNondominated(population, len(population), first_front_only=True)[0]
+
+    # Displaying the Pareto front solutions
+    print("Pareto Front Solutions:")
+    for ind in pareto_front:
+        print("Tilt:", ind[0], "Azimuth:", ind[1], "ModulRowSpacing:", ind[2], "Storage:", ind[3], "ModuleWidth:", ind[4])
+        print("Objectives (TAC, Selfsufficiency):", multi_objective_function(ind))
+        print("---")
+
+    # Extracting all solutions
+    all_solutions = np.array([ind.fitness.values for ind in population])
+
+    # Scatter plot of all solutions
+    plt.scatter(all_solutions[:, 0], -all_solutions[:, 1], label='All Solutions', alpha=0.5)
+
+    # Highlight Pareto front solutions
+    pareto_solutions = np.array([ind.fitness.values for ind in pareto_front])
+    plt.scatter(pareto_solutions[:, 0], -pareto_solutions[:, 1], label='Pareto Front', color='red')
+
+    # Set x-axis to logarithmic scale
+    plt.xscale('log')
+
+    plt.xlabel('TAC')
+    plt.ylabel('Selfsufficiency')
+    plt.title('Scatter Plot of All Solutions')
+    plt.legend()
+
+    # Save the plot as a PDF file
+    plt.savefig('resultLastGeneration.pdf')
+
+    plt.show()
