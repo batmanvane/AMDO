@@ -1,0 +1,17 @@
+Component,Property,Unit,location01
+STORAGE,NPVcontribution,[1e Euro],373.9827308810273
+STORAGE,TAC,[1e Euro/a],373.982730881027
+STORAGE,capacity,[kW_el*h],5.0
+STORAGE,capexCap,[1e Euro/a],356.482730881027
+STORAGE,commissioning,[kW_el*h],5.0
+STORAGE,decommissioning,[kW_el*h],0.0
+STORAGE,invest,[1e Euro],3500.0
+STORAGE,investLifetimeExtension,[1e Euro],0
+STORAGE,operationCharge,[kW_el*h/a],1574.9999999999998
+STORAGE,operationCharge,[kW_el*h],1574.9999999999998
+STORAGE,operationDischarge,[kW_el*h/a],1421.1992522390833
+STORAGE,operationDischarge,[kW_el*h],1421.1992522390833
+STORAGE,opexCap,[1e Euro/a],17.5
+STORAGE,opexCharge,[1e Euro/a],0.0
+STORAGE,opexDischarge,[1e Euro/a],0.0
+STORAGE,revenueLifetimeShorteningResale,[1e Euro],0

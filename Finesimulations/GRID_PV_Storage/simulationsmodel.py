@@ -7,8 +7,10 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 from tabulate import tabulate
-from getPVPowerprofile import get_pv_power_profile, calculate_module_row_spacing, plot_solar_elevation
-def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, maxCapacityPV=100, fixCapacityPV=None,
+from getPVPowerprofile import getPVPowerProfile, calculate_moduleRowSpacing, plotSolarElevation
+
+
+def energySystemsStats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, maxCapacityPV=100, fixCapacityPV=None,
                          maxCapacityST=100, fixCapacityST=5,
                          start=2014, end=2014, investPerCapacityPV=800, investPerCapacityST=700, relEmissionCosts=50,
                          scale_sink=1, module_width=1.5, moduleRowSpacing=3):
@@ -115,13 +117,28 @@ def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, ma
     # source_2 as PV
     # load PV data
     # dataPV = pd.read_excel("DataForExample/PV_1.xlsx")
-    dataPVgis, data = get_pv_power_profile(latitude, longitude, start, end, surface_tilt=tilt,
+    dataPVgis, data = getPVPowerProfile(latitude, longitude, start, end, surface_tilt=tilt,
                                            surface_azimuth=azimuth)
     dataPVgis.rename("location01", inplace=True)
-    alignmentPV = calculate_module_row_spacing(data, module_width=module_width, module_row_spacing=moduleRowSpacing)
-    damping = alignmentPV["damping"]
+
+    # Filter for December 21st
+    december_21_data = data[(data.index.month == 12) & (data.index.day == 21)]
+
+    # Filter for June 21st
+    june_21_data = data[(data.index.month == 6) & (data.index.day == 21)]
+
+    alignmentPVlow = calculate_moduleRowSpacing(december_21_data, module_width=module_width,
+                                                  moduleRowSpacing=moduleRowSpacing)
+    alignmentPVHigh = calculate_moduleRowSpacing(june_21_data, module_width=module_width,
+                                                   moduleRowSpacing=moduleRowSpacing)
+    dampingLow = alignmentPVlow["damping"]
+    dampingHigh = alignmentPVHigh["damping"]
+
+    print(dampingLow, dampingHigh)
+    dataPVgis = dataPVgis * (1 - (dampingLow + dampingHigh) / 2)
+
     # Multiply entries by damping if solar_elevation is smaller than elevarionearly
-    #dataPVgis['solar_elevation'] = dataPVgis.apply(
+    # dataPVgis['solar_elevation'] = dataPVgis.apply(
     #    lambda x: x['solar_elevation'] * damping if x['solar_elevation'] < alignmentPV["elevationAngleTimeEarly"] else x['solar_elevation'])
     # Multiply entries by Damping if solar_elevation is smaller than elevarionearly
     # models shadowing effects of PV panels
@@ -141,17 +158,17 @@ def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, ma
     # # Show the plot
     # plt.show()
 
-    #plot_solar_elevation(data)
-    #dataplot= data
-    #dataplot['solar_elevation']=dataplot['solar_elevation'] * np.where(data['solar_elevation'] < alignmentPV["elevationAngleTimeEarly"], damping, 1)
-    #plot_solar_elevation(dataplot)
+    # plotSolarElevation(data)
+    # dataplot= data
+    # dataplot['solar_elevation']=dataplot['solar_elevation'] * np.where(data['solar_elevation'] < alignmentPV["elevationAngleTimeEarly"], damping, 1)
+    # plotSolarElevation(dataplot)
 
     esM.add(fn.Source(esM=esM,
                       name='PV',
                       commodity=source_2,
                       hasCapacityVariable=True,
-                      capacityFix=fixCapacityPV * module_width/1.5,  # minimal capacity to be installed
-                      capacityMax=maxCapacityPV * module_width/1.5,  # maximal possible capacity
+                      capacityFix=fixCapacityPV * module_width / 1.5,  # minimal capacity to be installed
+                      capacityMax=maxCapacityPV * module_width / 1.5,  # maximal possible capacity
                       operationRateMax=dataPVgis,
                       investPerCapacity=investPerCapacityPV,
                       opexPerCapacity=investPerCapacityPV * 0.015,
@@ -294,44 +311,49 @@ def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, ma
     # Create a pandas DataFrame from the dictionary
     tableview = pd.DataFrame(dataprint)
     # Transpose the DataFrame
-    tableview_transposed = tableview.T
+    tableviewTransposed = tableview.T
     # Format the DataFrame as a table
-    # table: str = tabulate(tableview_transposed, headers='keys', tablefmt='psql', showindex=True)
+    # table: str = tabulate(tableviewTransposed, headers='keys', tablefmt='psql', showindex=True)
 
     # Display the table
     # print(table)
 
-    ## Export results
+    ## Export results to Excel
     [esM.getOptimizationSummary("SourceSinkModel", outputLevel=1).to_excel("Results/SourceSinkModel.xlsx"), ]
     [esM.getOptimizationSummary("StorageModel", outputLevel=1).to_excel("Results/StorageModel.xlsx"), ]
     [esM.getOptimizationSummary("ConversionModel", outputLevel=1).to_excel("Results/ConversionModel.xlsx"), ]
-    tableview_transposed.to_excel("Results/Summary.xlsx")
+    tableviewTransposed.to_excel("Results/Summary.xlsx")
+
+    ## Export results to CSV
+    esM.getOptimizationSummary("SourceSinkModel", outputLevel=1).to_csv("Results/SourceSinkModel.csv", )
+    esM.getOptimizationSummary("StorageModel", outputLevel=1).to_csv("Results/StorageModel.csv", )
+    esM.getOptimizationSummary("ConversionModel", outputLevel=1).to_csv("Results/ConversionModel.csv", )
+    tableviewTransposed.to_csv("Results/Summary.csv", )
 
     # Create a dictionary to store the results
     results = {
-        'tableview': tableview_transposed,
+        'tableview': tableviewTransposed,
         'srcSnkSummary': srcSnkSummary,  # Replace None with the actual srcSnkSummary calculation
         'convSummary': convSummary,  # Replace None with the actual convSummary calculation
         'storSummary': storSummary,  # Replace None with the actual storSummary calculation
         'esM': esM,  # Replace None with the actual esM calculation
         'data': data,
-        'alignmentPV': alignmentPV  # Store area_usage as alignmentPV for demonstration purposes
+        'alignmentPVlow': alignmentPVlow,  # Store areaUsage as alignmentPV for demonstration purposes
+        'alignmentPVHigh': alignmentPVHigh  # Store areaUsage as alignmentPV for demonstration purposes
     }
 
     return results
 
 if __name__ == "__main__":
+    tilt = 20
+    azimuth = 110
+    modulRowSpacing = 3
+    storage = 5
 
-         tilt= 20
-         azimuth= 110
-         modulRowSpacing= 3
-
-         result = energy_systems_stats(tilt=tilt, azimuth=azimuth, fixCapacityPV=100, maxCapacityPV=100, scale_sink=10,
-                                       module_width=2, moduleRowSpacing=modulRowSpacing)
-         objective=result['tableview'].loc['TAC'].values[0]
-         # print(tabulate(result["tableview"], headers='keys', tablefmt='psql', showindex=True))
-         # print(result["alignmentPV"])
-
+    energySystemsStats(tilt=tilt, azimuth=azimuth, fixCapacityST=storage, maxCapacityST=storage, fixCapacityPV=100,
+                         maxCapacityPV=100, scale_sink=10,
+                         module_width=1.5, moduleRowSpacing=modulRowSpacing)
+    #
     # from deap import base, creator, tools, algorithms
     # from concurrent.futures import ThreadPoolExecutor
     # import concurrent.futures
@@ -340,46 +362,54 @@ if __name__ == "__main__":
     # def multi_objective_function(params):
     #     try:
     #         tilt, azimuth, modulRowSpacing, storage, moduleWidth = params
-    #         result = energy_systems_stats(tilt=tilt, azimuth=azimuth, fixCapacityST=storage,fixCapacityPV=100, maxCapacityPV=100,
+    #         result = energySystemsStats(tilt=tilt, azimuth=azimuth, fixCapacityST=storage,maxCapacityST=storage,fixCapacityPV=100, maxCapacityPV=100,
     #                                       scale_sink=10, module_width=moduleWidth, moduleRowSpacing=modulRowSpacing)
     #
     #         # Minimize both TAC and CO2
-    #         objective_TAC = result['tableview'].loc['TAC'].values[0]
+    #         objectiveTAC = result['tableview'].loc['TAC'].values[0]
     #         objective_CO2 = result['tableview'].loc['operationTotCO2'].values[0]
-    #         objective_SelfSufficiency = result['tableview'].loc['selfsufficiency'].values[0]
-    #         objective_SelfConsumption = result['tableview'].loc['selfconsumption'].values[0]
-    #         return [objective_TAC, -objective_SelfSufficiency]
+    #         objectiveSelfSufficiency = result['tableview'].loc['selfsufficiency'].values[0]
+    #         objectiveSelfConsumption = result['tableview'].loc['selfconsumption'].values[0]
+    #         return [objectiveTAC, -objectiveSelfSufficiency]
     #     except Exception as e:
     #         print(e)
     #         return [np.inf, np.inf]
     #
+    # def feasible(individual):
+    #     """Feasibility function for the individual. Returns True if feasible, False otherwise."""
+    #     if 1 < individual[0] < 85:
+    #         if 30 < individual[1] < 330:
+    #             if 0.5 < individual[2] < 10:
+    #                 if 1 < individual[3] < 100:
+    #                     if 1.5 < individual[4] < 4:
+    #                         return True
+    #     return False
     #
-    # # Define the NSGA-II algorithm parameters
+    #     # Define the NSGA-II algorithm parameters
     # creator.create("FitnessMulti", base.Fitness, weights=(-1.0, -1.0))  # Minimize both objectives
     # creator.create("Individual", list, fitness=creator.FitnessMulti)
     #
     # toolbox = base.Toolbox()
-    # toolbox.register("attr_float", np.random.uniform, 0, 1)  # Example: Uniform distribution between 0 and 1
+    # toolbox.register("attr_float", np.random.uniform, 0, 1)
     # toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attr_float, n=5)
-    #
     # # Define the box constraints for each variable
-    # low_bounds = [1, 30, 0.5, 1, 1.5] #tilt, azimuth, modulRowSpacing, minStorage, moduleWidth
-    # up_bounds = [85, 330, 10, 100, 4]# tilt, azimuth, modulRowSpacing, minStorage, moduleWidth
+    # low_bounds = [1, 30, 0.5, 1, 1.5]  # tilt, azimuth, modulRowSpacing, minStorage, moduleWidth
+    # up_bounds = [85, 330, 10, 100, 4]  # tilt, azimuth, modulRowSpacing, minStorage, moduleWidth
     # toolbox.register("mate", tools.cxSimulatedBinaryBounded, low=low_bounds, up=up_bounds, eta=15)
-    # toolbox.register("mutate", tools.mutPolynomialBounded, low=low_bounds, up=up_bounds, eta=20)
+    # toolbox.register("mutate", tools.mutPolynomialBounded,indpb=0.2, low=low_bounds, up=up_bounds, eta=20)
     #
     # toolbox.register("population", tools.initRepeat, list, toolbox.individual)
-    # toolbox.register("mate", tools.cxBlend, alpha=0.5)  # Example: Blend crossover with alpha=0.5
-    # toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.2, indpb=0.2)  # Example: Gaussian mutation
     # toolbox.register("select", tools.selNSGA2)
     # toolbox.register("evaluate", multi_objective_function)
+    # toolbox.decorate("evaluate", tools.DeltaPenalty(feasible, 1e9))
+    #
     #
     # def evaluate_parallel(individual):
     #     return multi_objective_function(individual),
     #
-    # # Number of generations and population size (adjust as needed)
-    # ngen = 100
-    # pop_size = 50
+    #     # Number of generations and population size (adjust as needed)
+    # ngen = 50
+    # pop_size = 20
     #
     # # Create an initial population
     # population = toolbox.population(n=pop_size)
