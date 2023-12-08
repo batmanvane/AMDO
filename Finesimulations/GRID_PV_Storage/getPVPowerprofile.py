@@ -4,7 +4,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
-
 def get_pv_power_profile(latitude: object = 52, longitude: object = 13.5, start: object = 2014, end: object = 2014,
                          surface_tilt: object = 20,
                          surface_azimuth: object = 180) -> object:
@@ -86,9 +85,11 @@ def plot_solar_elevation(data):
     plt.title("Solar Elevation on Dec 21 and Jun 21 (24-hour timescale)")
     plt.legend()
     plt.grid(True)
+    plt.savefig('resultElevation.pdf')
     plt.show()
 
-def calculate_module_row_spacing(data, time1='09:00:00', time2='15:00:00', surface_tilt=30, module_width=2,module_row_spacing=3):
+
+def calculate_module_row_spacing(data, time1='10:00:00', time2='15:00:00', surface_tilt=30, module_width=2,module_row_spacing=3):
     """
     Calculate solar elevation angles at specified times and module row spacing.
 
@@ -131,7 +132,7 @@ def calculate_module_row_spacing(data, time1='09:00:00', time2='15:00:00', surfa
 
     # Calculate Area_Usage
     area_usage = module_width / (module_row_spacing+np.cos(np.radians(surface_tilt)) * module_width)
-    damping = np.maximum((module_row_spacing_no_shadow-module_row_spacing)/module_row_spacing_no_shadow,0) #simple geometry
+    damping = np.maximum((module_row_spacing_no_shadow-module_row_spacing)/(module_row_spacing_no_shadow+1e-6),0) #simple geometry
     result = {
         'elevationAngleTimeEarly': elevation_angle_time1,
         'elevationAngleTimeLate': elevation_angle_time2,

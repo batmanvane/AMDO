@@ -3,16 +3,15 @@
 # autor: Klaus Markgraf // Robert Flassig
 
 import FINE as fn
+import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 from tabulate import tabulate
 from getPVPowerprofile import get_pv_power_profile, calculate_module_row_spacing, plot_solar_elevation
-
-
 def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, maxCapacityPV=100, fixCapacityPV=None,
                          maxCapacityST=100, fixCapacityST=5,
                          start=2014, end=2014, investPerCapacityPV=800, investPerCapacityST=700, relEmissionCosts=50,
-                         scale_sink=1, module_width=2, moduleRowSpacing=30):
+                         scale_sink=1, module_width=1.5, moduleRowSpacing=3):
     """
    Calculates the statistics of an energy system model based on the given parameters.
 
@@ -31,8 +30,8 @@ def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, ma
        investPerCapacityST (int, optional): Investment cost per capacity of storage in Euro. Defaults to 700.
        relEmissionCosts (int, optional): Relative emission costs in Euro per ton of CO2 equivalent. Defaults to 50.
        scale_sink (int, optional): Scaling factor for the electricity load demand profile. Defaults to 1.
-       f (float, optional): Scaling factor for the maximum capacity of PV panels. Defaults to 0.3.
-
+       module_width (float, optional): Width of the PV module in m. Defaults to 1.5m for 1 module row.
+       moduleRowSpacing (int, optional): Spacing between the PV module rows in m. Defaults to 3
    Returns:
    - Dictionary containing the following variables:
        - 'df_transposed': Transposed DataFrame for tabular view.
@@ -44,10 +43,7 @@ def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, ma
        - 'alignmentPV': PV alignment result.
    """
     # Define Components of EnergySystemModel
-
     # 1. Define locations of the energy system model
-
-
     locations = {'location01'}
     # 2. Define commodities and units of commodities
     commodities = {'sink_1_commodity',
@@ -70,7 +66,7 @@ def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, ma
     storage_1 = "storage_1_commodity"  # Storage, track Storage to sink_1
 
     # 4. Define the energy system model instance
-    esM = fn.EnergySystemModel(locations={"location01"},
+    esM = fn.EnergySystemModel(locations=locations,
                                commodities=commodities,
                                numberOfTimeSteps=8760,
                                commodityUnitsDict=commodityUnitDict,
@@ -127,23 +123,35 @@ def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, ma
     # Multiply entries by damping if solar_elevation is smaller than elevarionearly
     #dataPVgis['solar_elevation'] = dataPVgis.apply(
     #    lambda x: x['solar_elevation'] * damping if x['solar_elevation'] < alignmentPV["elevationAngleTimeEarly"] else x['solar_elevation'])
-    # Multiply entries by fDamping if solar_elevation is smaller than elevarionearly
+    # Multiply entries by Damping if solar_elevation is smaller than elevarionearly
     # models shadowing effects of PV panels
-    dataPVgis = dataPVgis * np.where(data['solar_elevation'] < alignmentPV["elevationAngleTimeEarly"], 1-damping, 1)
+    # dataPVgisDamp = dataPVgis * np.where(data['solar_elevation'] < alignmentPV["elevationAngleTimeEarly"], 1 - 0.5, 1)
+    # plt.plot(dataPVgis, label='Original dataPVgis')
+    # plt.plot(dataPVgisDamp, label='Modified dataPVgisdamp')
+    #                                 1)
+
+    # # Adding labels and title
+    # plt.xlabel('X-axis Label')
+    # plt.ylabel('Y-axis Label')
+    # plt.title('Comparison of Original and Modified DataPVgis')
+
+    ## Display legend
+    # plt.legend()
+    # plt.savefig('resultDamping.pdf')
+    # # Show the plot
+    # plt.show()
 
     #plot_solar_elevation(data)
     #dataplot= data
     #dataplot['solar_elevation']=dataplot['solar_elevation'] * np.where(data['solar_elevation'] < alignmentPV["elevationAngleTimeEarly"], damping, 1)
     #plot_solar_elevation(dataplot)
 
-
-    maxCapacityPV = maxCapacityPV
     esM.add(fn.Source(esM=esM,
                       name='PV',
                       commodity=source_2,
                       hasCapacityVariable=True,
-                      capacityFix=fixCapacityPV,  # minimal capacity to be installed
-                      capacityMax=maxCapacityPV,  # maximal possible capacity
+                      capacityFix=fixCapacityPV * module_width/1.5,  # minimal capacity to be installed
+                      capacityMax=maxCapacityPV * module_width/1.5,  # maximal possible capacity
                       operationRateMax=dataPVgis,
                       investPerCapacity=investPerCapacityPV,
                       opexPerCapacity=investPerCapacityPV * 0.015,
@@ -203,7 +211,7 @@ def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, ma
     # to each period a typical period (e.g. 7 typical days with 24 hours) is assigned.
     esM.aggregateTemporally(numberOfTypicalPeriods=7)
     # set optimizer and solver (GLPK, CPLEX, GUROBI)
-    esM.optimize(timeSeriesAggregation=True, solver='glpk')
+    esM.optimize(timeSeriesAggregation=True, solver='GLPK')
 
     ## Get the optimization summary
     # 6. Results
@@ -313,11 +321,113 @@ def energy_systems_stats(tilt=20, azimuth=180, longitude=13.5, latitude=52.5, ma
     return results
 
 if __name__ == "__main__":
-    tilt= 3
-    azimuth= 110
-    modulRowSpacing= 3
 
-    result = energy_systems_stats(tilt=tilt, azimuth=azimuth, fixCapacityPV=100, maxCapacityPV=100, scale_sink=10,
-                                  module_width=2, moduleRowSpacing=modulRowSpacing)
-    print(tabulate(result["tableview"], headers='keys', tablefmt='psql', showindex=True))
-    print(result["alignmentPV"])
+         tilt= 20
+         azimuth= 110
+         modulRowSpacing= 3
+
+         result = energy_systems_stats(tilt=tilt, azimuth=azimuth, fixCapacityPV=100, maxCapacityPV=100, scale_sink=10,
+                                       module_width=2, moduleRowSpacing=modulRowSpacing)
+         objective=result['tableview'].loc['TAC'].values[0]
+         # print(tabulate(result["tableview"], headers='keys', tablefmt='psql', showindex=True))
+         # print(result["alignmentPV"])
+
+    # from deap import base, creator, tools, algorithms
+    # from concurrent.futures import ThreadPoolExecutor
+    # import concurrent.futures
+    # import matplotlib.pyplot as plt
+    #
+    # def multi_objective_function(params):
+    #     try:
+    #         tilt, azimuth, modulRowSpacing, storage, moduleWidth = params
+    #         result = energy_systems_stats(tilt=tilt, azimuth=azimuth, fixCapacityST=storage,fixCapacityPV=100, maxCapacityPV=100,
+    #                                       scale_sink=10, module_width=moduleWidth, moduleRowSpacing=modulRowSpacing)
+    #
+    #         # Minimize both TAC and CO2
+    #         objective_TAC = result['tableview'].loc['TAC'].values[0]
+    #         objective_CO2 = result['tableview'].loc['operationTotCO2'].values[0]
+    #         objective_SelfSufficiency = result['tableview'].loc['selfsufficiency'].values[0]
+    #         objective_SelfConsumption = result['tableview'].loc['selfconsumption'].values[0]
+    #         return [objective_TAC, -objective_SelfSufficiency]
+    #     except Exception as e:
+    #         print(e)
+    #         return [np.inf, np.inf]
+    #
+    #
+    # # Define the NSGA-II algorithm parameters
+    # creator.create("FitnessMulti", base.Fitness, weights=(-1.0, -1.0))  # Minimize both objectives
+    # creator.create("Individual", list, fitness=creator.FitnessMulti)
+    #
+    # toolbox = base.Toolbox()
+    # toolbox.register("attr_float", np.random.uniform, 0, 1)  # Example: Uniform distribution between 0 and 1
+    # toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attr_float, n=5)
+    #
+    # # Define the box constraints for each variable
+    # low_bounds = [1, 30, 0.5, 1, 1.5] #tilt, azimuth, modulRowSpacing, minStorage, moduleWidth
+    # up_bounds = [85, 330, 10, 100, 4]# tilt, azimuth, modulRowSpacing, minStorage, moduleWidth
+    # toolbox.register("mate", tools.cxSimulatedBinaryBounded, low=low_bounds, up=up_bounds, eta=15)
+    # toolbox.register("mutate", tools.mutPolynomialBounded, low=low_bounds, up=up_bounds, eta=20)
+    #
+    # toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+    # toolbox.register("mate", tools.cxBlend, alpha=0.5)  # Example: Blend crossover with alpha=0.5
+    # toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.2, indpb=0.2)  # Example: Gaussian mutation
+    # toolbox.register("select", tools.selNSGA2)
+    # toolbox.register("evaluate", multi_objective_function)
+    #
+    # def evaluate_parallel(individual):
+    #     return multi_objective_function(individual),
+    #
+    # # Number of generations and population size (adjust as needed)
+    # ngen = 100
+    # pop_size = 50
+    #
+    # # Create an initial population
+    # population = toolbox.population(n=pop_size)
+    #
+    # # Use ThreadPoolExecutor for parallel evaluation of individuals
+    # with ThreadPoolExecutor() as executor:
+    #     futures = {executor.submit(toolbox.evaluate, ind): ind for ind in population}
+    #     for future in concurrent.futures.as_completed(futures):
+    #         ind = futures[future]
+    #         try:
+    #             fitness_values = future.result()
+    #             ind.fitness.values = fitness_values
+    #         except Exception as e:
+    #             print(f"Error in evaluating individual {ind}: {e}")
+    #
+    # # Use eaMuPlusLambda without the evaluate keyword
+    # algorithms.eaMuPlusLambda(population, toolbox, mu=pop_size, lambda_=2 * pop_size, cxpb=0.7, mutpb=0.2, ngen=ngen,
+    #                           stats=None, halloffame=None, verbose=True)
+    #
+    # # Extracting Pareto front (non-dominated solutions)
+    # pareto_front = tools.sortNondominated(population, len(population), first_front_only=True)[0]
+    #
+    # # Displaying the Pareto front solutions
+    # print("Pareto Front Solutions:")
+    # for ind in pareto_front:
+    #     print("Tilt:", ind[0], "Azimuth:", ind[1], "ModulRowSpacing:", ind[2], "Storage:", ind[3], "ModuleWidth:", ind[4])
+    #     print("Objectives (TAC, Selfsufficiency):", multi_objective_function(ind))
+    #     print("---")
+    #
+    # # Extracting all solutions
+    # all_solutions = np.array([ind.fitness.values for ind in population])
+    #
+    # # Scatter plot of all solutions
+    # plt.scatter(all_solutions[:, 0], -all_solutions[:, 1], label='All Solutions', alpha=0.5)
+    #
+    # # Highlight Pareto front solutions
+    # pareto_solutions = np.array([ind.fitness.values for ind in pareto_front])
+    # plt.scatter(pareto_solutions[:, 0], -pareto_solutions[:, 1], label='Pareto Front', color='red')
+    #
+    # # Set x-axis to logarithmic scale
+    # plt.xscale('log')
+    #
+    # plt.xlabel('TAC')
+    # plt.ylabel('Selfsufficiency')
+    # plt.title('Scatter Plot of All Solutions')
+    # plt.legend()
+    #
+    # # Save the plot as a PDF file
+    # plt.savefig('resultLastGeneration.pdf')
+    #
+    # plt.show()
