@@ -1,44 +1,44 @@
 Component,Property,Unit,location01
-GRID,NPVcontribution,[1e Euro],4587.0525565304415
-GRID,TAC,[1e Euro/a],4587.052556530438
-GRID,commodCosts,[1e Euro/a],4587.052556530438
+GRID,NPVcontribution,[1e Euro],0.0
+GRID,TAC,[1e Euro/a],0.0
+GRID,commodCosts,[1e Euro/a],0.0
 GRID,commodRevenues,[1e Euro/a],0.0
-GRID,operation,[kW_el*h/a],13105.864447229551
-GRID,operation,[kW_el*h],13105.864447229551
+GRID,operation,[kW_el*h/a],0.0
+GRID,operation,[kW_el*h],0.0
 GRID,opexOp,[1e Euro/a],0.0
-PV,NPVcontribution,[1e Euro],1269.5266484356598
-PV,TAC,[1e Euro/a],1269.5266484356587
-PV,capacity,[kW_el],18.462628764876477
-PV,capexCap,[1e Euro/a],1047.975103257141
-PV,commissioning,[kW_el],18.462628764876477
+PV,NPVcontribution,[1e Euro],11186.532411527662
+PV,TAC,[1e Euro/a],11186.532411527653
+PV,capacity,[kW_el],162.6848836413069
+PV,capexCap,[1e Euro/a],9234.31380783197
+PV,commissioning,[kW_el],162.6848836413069
 PV,commodCosts,[1e Euro/a],0.0
 PV,commodRevenues,[1e Euro/a],0.0
 PV,decommissioning,[kW_el],0.0
-PV,invest,[1e Euro],14770.103011901181
+PV,invest,[1e Euro],130147.90691304552
 PV,investLifetimeExtension,[1e Euro],0
-PV,operation,[kW_el*h/a],11888.268403717506
-PV,operation,[kW_el*h],11888.268403717506
-PV,opexCap,[1e Euro/a],221.55154517851773
+PV,operation,[kW_el*h/a],143934.11027820822
+PV,operation,[kW_el*h],143934.11027820822
+PV,opexCap,[1e Euro/a],1952.2186036956828
 PV,opexOp,[1e Euro/a],0.0
 PV,revenueLifetimeShorteningResale,[1e Euro],0
-environment,NPVcontribution,[1e Euro],207268.5707538992
-environment,TAC,[1e Euro/a],207268.57075389902
+environment,NPVcontribution,[1e Euro],30801.870409446437
+environment,TAC,[1e Euro/a],30801.870409446412
 environment,commodCosts,[1e Euro/a],0.0
 environment,commodRevenues,[1e Euro/a],0.0
-environment,operation,[t_CO2e*h/a],4145.371415078048
-environment,operation,[t_CO2e*h],4145.371415078048
-environment,opexOp,[1e Euro/a],207268.57075389902
+environment,operation,[t_CO2e*h/a],616.0374081889174
+environment,operation,[t_CO2e*h],616.0374081889174
+environment,opexOp,[1e Euro/a],30801.870409446412
 sink_1,NPVcontribution,[1e Euro],0.0
 sink_1,TAC,[1e Euro/a],0.0
 sink_1,commodCosts,[1e Euro/a],0.0
 sink_1,commodRevenues,[1e Euro/a],0.0
-sink_1,operation,[kW_el*h/a],20217.600000000006
-sink_1,operation,[kW_el*h],20217.600000000006
+sink_1,operation,[kW_el*h/a],20217.599999999293
+sink_1,operation,[kW_el*h],20217.599999999293
 sink_1,opexOp,[1e Euro/a],0.0
-spot,NPVcontribution,[1e Euro],-237.5265709177201
-spot,TAC,[1e Euro/a],-237.5265709177199
+spot,NPVcontribution,[1e Euro],-6138.278472965609
+spot,TAC,[1e Euro/a],-6138.278472965603
 spot,commodCosts,[1e Euro/a],0.0
-spot,commodRevenues,[1e Euro/a],237.5265709177199
-spot,operation,[kW_el*h/a],4750.531418354351
-spot,operation,[kW_el*h],4750.531418354351
+spot,commodRevenues,[1e Euro/a],6138.278472965603
+spot,operation,[kW_el*h/a],122765.56945931217
+spot,operation,[kW_el*h],122765.56945931217
 spot,opexOp,[1e Euro/a],0.0
